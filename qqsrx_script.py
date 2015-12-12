@@ -1,5 +1,5 @@
-from bs4 import BeautifulSoup
-import urllib.request, html5lib, re
+from bs4 import BeautifulSoup, NavigableString, Tag
+import urllib.request, html5lib, re, bs4
 
 
 
@@ -12,18 +12,19 @@ def getHTML(url):
 
 
 
-def getTranscriptLinks():
+def getLinksFromMainPage():
+
 
     def notBlogLink(href):
         return href and not re.compile("blog").search(href)
 
-    def getTranscriptPageLinkTags():
+    def getPageLinkTags():
         ''' Get the <a> tags for links to the episode transcript pages. '''
         url = 'http://phtv.ifeng.com/program/qqsrx/'
         soup = BeautifulSoup(getHTML(url), 'html5lib')
         return soup.find_all("a", string=re.compile("详细"), href=notBlogLink)
 
-    taglist = getTranscriptPageLinkTags()
+    taglist = getPageLinkTags()
     urls = []
     for tag in taglist:
         urls.append(tag['href'])
@@ -31,20 +32,53 @@ def getTranscriptLinks():
     return urls
 
 
-def getTranscriptText(url):
+def getLinksFromEpisodePage(firstPage):
+    soup = BeautifulSoup(getHTML(firstPage), 'html5lib')
+    otherPageTags = soup.find_all("a", string=re.compile("^2$|^3$|^4$|^5$"))
+    pageList = [ tag['href'] for tag in otherPageTags ]
 
-    def getPages(url_):
-        pass
+    return pageList
 
-    fullTranscript = ""
-    for page in getPages(url):
-        text = getBodyText(page)
-        fullTranscipt += text
+def getUrlListForEpisode(firstPage):
+    otherPagesList = getLinksFromEpisodePage(firstPage)
+    return [firstPage] + otherPagesList
 
-    return fullTranscript
+
+
+def getTextFromPage(url):
+
+    def hasMainContentParent(tag):
+        return (tag.find_parents(id="main_content") and 
+                not tag.has_attr('style') and
+                'p' in tag.name and
+                not tag.name == 'a' and
+                not tag.name == 'span' )
+
+
+    soup = BeautifulSoup(getHTML(url), 'html5lib')
+    results = soup.find_all(hasMainContentParent)
+
+    bodyText = ""
+    for tag in results:
+        if tag.string:
+            bodyText += tag.string +'\n'
+
+
+    return bodyText
 
 
 
 if __name__ == '__main__':
-    urls = getTranscriptLinks()
-    transcripts = getTranscriptText(urls)
+    currentEpisodes = getLinksFromMainPage()
+    transcripts = []
+    episodeCount = 1
+    for episode in currentEpisodes:
+        urllist = getUrlListForEpisode(episode)
+        fullTranscript = ''
+        for url in urllist:
+            fullTranscript += getTextFromPage(url)
+        print('======================================EPISODE' + str(episodeCount) + '=====================================================\n' +
+                fullTranscript +
+                '===========================================================================================')
+        episodeCount += 1
+
