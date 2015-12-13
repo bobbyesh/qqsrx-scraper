@@ -17,14 +17,14 @@ def get_links_from_main_page():
         return href and not re.compile("blog").search(href)
 
     def get_page_link_tags():
-        ''' Get the <a> tags for links to the episode transcript pages. '''
+        """ Get the <a> tags for links to the episode transcript pages. """
         url = 'http://phtv.ifeng.com/program/qqsrx/'
         soup = BeautifulSoup(get_html(url), 'html5lib')
         return soup.find_all("a", string=re.compile("详细"), href=not_blog_link)
 
-    taglist = get_page_link_tags()
+    tag_list = get_page_link_tags()
     urls = []
-    for tag in taglist:
+    for tag in tag_list:
         urls.append(tag['href'])
 
     return urls
