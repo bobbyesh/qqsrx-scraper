@@ -133,11 +133,3 @@ class TranscriptFetcher:
         for url in self.episode_urls:
             new_episode = Episode.from_first_page_url(url)
             self.episodes.append(new_episode)
-
-
-if __name__ == '__main__':
-    fetcher = TranscriptFetcher()
-    episodes = fetcher.get_transcripts()
-    ep_num = 1
-    for e in episodes:
-        print(type(e.title))
