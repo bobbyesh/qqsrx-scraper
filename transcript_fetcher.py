@@ -42,7 +42,7 @@ class Page:
         results = soup.find_all(has_main_content_parent)
         for tag in results:
             if tag.string:
-                self.body += tag.string + '\n'
+                self.body += tag.string + '\n\n'
 
     def get_heading(self):
 
@@ -85,10 +85,10 @@ class Episode:
 
     def build_transcript(self):
         for page in self.pages:
-            self.transcript += page.body
+            self.transcript += str(page.body)
 
     def build_title(self):
-        self.title = self.first_page().heading
+        self.title = str(self.first_page().heading)
 
     def first_page(self):
         return self.pages[0]
@@ -105,12 +105,11 @@ class TranscriptFetcher:
     episodes = []
 
     def __init__(self):
-        pass
-
-    def fetch_transcripts(self):
         self.get_homepage_html()
         self.get_episode_urls()
         self.build_episodes_from_urls()
+
+    def get_transcripts(self):
         return self.episodes
 
     def get_homepage_html(self):
@@ -138,10 +137,7 @@ class TranscriptFetcher:
 
 if __name__ == '__main__':
     fetcher = TranscriptFetcher()
-    episodes = fetcher.fetch_transcripts()
+    episodes = fetcher.get_transcripts()
     ep_num = 1
     for e in episodes:
-        print("Episode " + str(ep_num))
-        for p in e.pages:
-            print(p.url)
-        ep_num += 1
+        print(type(e.title))
