@@ -22,7 +22,9 @@ class Messenger:
 
     def send_string(self, ep_title, ep_transcript):
         if self.episode_is_new(ep_title):
-            self.yag.send(self.recipient, ep_title, ep_transcript)
+            header = ep_title
+            body = ep_title + '\n\n' + ep_transcript
+            self.yag.send(self.recipient, header, body)
             self.add_episode_to_previous(ep_title)
             self.save_previous_episodes()
             return True
